@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tech Heroes Puzzle</title>
+  <style>
+    body { font-family: Arial; background: #2c3e50; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+    #setup { background: white; padding: 30px; border-radius: 10px; max-width: 400px; }
+    #setup h1 { color: #2c3e50; margin-bottom: 20px; }
+    #setup select { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 2px solid #bdc3c7; border-radius: 5px; }
+    #setup button { width: 100%; padding: 15px; margin-top: 10px; background: #3498db; color: white; border: none; cursor: pointer; font-size: 18px; font-weight: bold; border-radius: 5px; }
+    #setup button:hover { background: #2980b9; }
+    #game { display: none; width: 100vw; min-height: 150vh; position: relative; }
+    #game.active { display: block; }
+    canvas { position: absolute; top: 0; left: 0; cursor: grab; }
+    canvas:active { cursor: grabbing; }
+    #win { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #2ecc71; color: white; padding: 40px; font-size: 32px; border-radius: 10px; display: none; z-index: 999; }
+    #reset { position: fixed; top: 20px; right: 20px; background: #e74c3c; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; border-radius: 5px; z-index: 999; }
+  </style>
+</head>
+<body>
+  <div id="setup">
+    <h1>🧩 Tech Heroes Puzzle</h1>
+    <select id="hero">
+      <option value="">-- Choose a Hero --</option>
+      <option value="Ada Lovelace">Ada Lovelace - First Programmer</option>
+      <option value="Alan Turing">Alan Turing - Code Breaker</option>
+      <option value="Grace Hopper">Grace Hopper - Bug Hunter</option>
+      <option value="Tim Berners-Lee">Tim Berners-Lee - Web Inventor</option>
+      <option value="Steve Jobs">Steve Jobs - Apple Founder</option>
+      <option value="Bill Gates">Bill Gates - Microsoft</option>
+      <option value="Mark Zuckerberg">Mark Zuckerberg - Facebook</option>
+      <option value="Jeff Bezos">Jeff Bezos - Amazon</option>
+      <option value="Charles Babbage">Charles Babbage - Computer Dad</option>
+      <option value="John von Neumann">John von Neumann - Math Genius</option>
+      <option value="Kathleen Booth">Kathleen Booth - Programmer</option>
+    </select>
+    <select id="rows">
+      <option value="2">2 Rows (Easy)</option>
+      <option value="3" selected>3 Rows (Medium)</option>
+      <option value="4">4 Rows (Hard)</option>
+    </select>
+    <select id="cols">
+      <option value="2">2 Columns (Easy)</option>
+      <option value="3" selected>3 Columns (Medium)</option>
+      <option value="4">4 Columns (Hard)</option>
+    </select>
+    <button onclick="start()">Start Puzzle</button>
+  </div>
+
+  <div id="game">
+    <canvas id="canvas"></canvas>
+    <div id="win">🎉 Puzzle Complete! 🎉</div>
+    <button id="reset" onclick="reset()">New Puzzle</button>
+  </div>
+
+  <script>
+    const heroes = {
+      "Ada Lovelace": {
+        image: "https://lh3.googleusercontent.com/d/1bq7VjRxHJyh7td9PkNTZVAyK6HaXGmGB",
+        facts: [
+          "Born 1815", "First programmer", "Loved poetry", "Predicted AI",
+          "Math genius", "Daughter of poet", "Wrote algorithms", "Visionary",
+          "Age 12 prodigy", "Computer pioneer", "Dreamed big", "Changed tech",
+          "Analytical Engine", "Notes famous", "Female icon", "Inspiring"
+        ]
+      },
+      "Alan Turing": {
+        image: "https://lh3.googleusercontent.com/d/1khJ9QzJsS3HNdtgJwqkSIXTjLfgsHHet",
+        facts: [
+          "Code breaker", "WWII hero", "Turing Test", "AI pioneer",
+          "Math genius", "Marathon runner", "Enigma cracker", "Computer dad",
+          "Puzzle solver", "Cambridge grad", "Tragic hero", "Brilliant mind",
+          "Machine thinker", "Logic master", "War hero", "Tech founder"
+        ]
+      },
+      "Grace Hopper": {
+        image: "https://lh3.googleusercontent.com/d/1h7QE-JpaD8xBtjM0O4E1QkhmMqRz9NRQ",
+        facts: [
+          "Navy Admiral", "Found bug (moth!)", "COBOL creator", "Teacher",
+          "Computer pioneer", "Amazing Grace", "PhD in math", "Compiler genius",
+          "Nanoseconds!", "Loved teaching", "Navy service", "Programming hero",
+          "Language maker", "Bug finder", "Tech leader", "Inspiring woman"
+        ]
+      },
+      "Tim Berners-Lee": {
+        image: "https://lh3.googleusercontent.com/d/1GeDJV2oBhMfzmHgH4cNyKu5HHv8zVR0f",
+        facts: [
+          "Web inventor", "Created WWW", "Made it free!", "1989 creation",
+          "Changed world", "Built from TV", "CERN scientist", "HTTP creator",
+          "HTML maker", "URL inventor", "Sharing pioneer", "Oxford grad",
+          "Internet dad", "Open web", "Knighted!", "Web for all"
+        ]
+      },
+      "Steve Jobs": {
+        image: "https://lh3.googleusercontent.com/d/1Zw5jujS_TzMlQ2KneCk_d53hnK9Y3-DJ",
+        facts: [
+          "Apple founder", "iPhone creator", "Garage start", "Design lover",
+          "Pixar owner", "Think different", "Tech visionary", "iPad maker",
+          "Mac pioneer", "NeXT computers", "iPod genius", "Presentation master",
+          "Innovation king", "Perfectionist", "Dreamer", "Changed tech"
+        ]
+      },
+      "Bill Gates": {
+        image: "https://lh3.googleusercontent.com/d/1O_Uai4fjWBFCmeO4a_X_QcPxOQandj5X",
+        facts: [
+          "Microsoft founder", "Started age 13", "Harvard dropout", "Windows creator",
+          "50 books/year", "Philanthropist", "Richest person", "Programmer",
+          "DOS creator", "PC pioneer", "Gates Foundation", "Malaria fighter",
+          "Tech leader", "Smart investor", "Problem solver", "World helper"
+        ]
+      },
+      "Mark Zuckerberg": {
+        image: "https://lh3.googleusercontent.com/d/1BH3BjbEY_fhjAOG6iqjeaBNS3a523b-7",
+        facts: [
+          "Facebook founder", "Dorm room start", "Age 19!", "Harvard student",
+          "Billions connected", "Social media", "Meta CEO", "Hoodie wearer",
+          "Dog named Beast", "Loves learning", "Studies Chinese", "Young billionaire",
+          "Tech innovator", "Controversial", "Changed social", "Still coding"
+        ]
+      },
+      "Jeff Bezos": {
+        image: "https://lh3.googleusercontent.com/d/173TACCkZaz9N4C4MABH53CuNcX4Pjc52",
+        facts: [
+          "Amazon founder", "Online bookstore", "Space rockets!", "Blue Origin",
+          "McDonald's teen", "Sci-fi lover", "Richest ever", "Customer obsessed",
+          "Cloud computing", "AWS creator", "Fast shipping", "Kindle inventor",
+          "Bald billionaire", "Laughs loud", "Big dreamer", "E-commerce king"
+        ]
+      },
+      "Charles Babbage": {
+        image: "https://lh3.googleusercontent.com/d/1hc4imdfF9SfL_uvL5A9Y7O3YvKHNp5G7",
+        facts: [
+          "Computer father", "1800s genius", "Difference Engine", "Mechanical computer",
+          "Math tables", "Train speedometer", "Analytical Engine", "Never finished",
+          "Ahead of time", "Ada's friend", "British inventor", "Frustrated genius",
+          "Steam powered", "Gears and wheels", "Vision ahead", "Tech pioneer"
+        ]
+      },
+      "John von Neumann": {
+        image: "https://lh3.googleusercontent.com/d/1-jhYLa7Gxuhq38yywp7B3dBw1H9xNMqX",
+        facts: [
+          "Math prodigy", "7 languages", "Computer architect", "Game theory",
+          "Super smart", "Mental math", "Child genius", "Von Neumann design",
+          "EDVAC computer", "Quantum physics", "Manhattan Project", "Fast thinker",
+          "Party lover", "Told jokes", "Loved cars", "Brilliant mind"
+        ]
+      },
+      "Kathleen Booth": {
+        image: "https://lh3.googleusercontent.com/d/1XsQ1UodLf2z5gCfyFmY6gMK7Px3Q31de",
+        facts: [
+          "Assembly language", "1940s computers", "British scientist", "Easier programming",
+          "Computer designer", "Teacher", "Long career", "Worked with husband",
+          "APE(X)C computer", "Code writer", "Math expert", "Tech educator",
+          "Female pioneer", "Quiet hero", "Made history", "Programming easier"
+        ]
+      }
+    };
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let img, pieces = [], dragging = null, offsetX = 0, offsetY = 0;
+    let ROWS, COLS, SIZE = 200, snapDist = 40;
+    let gridX, gridY, gridW, gridH;
+
+    function start() {
+      const hero = document.getElementById('hero').value;
+      if (!hero) { alert('Choose a hero!'); return; }
+      ROWS = parseInt(document.getElementById('rows').value);
+      COLS = parseInt(document.getElementById('cols').value);
+      
+      img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('game').classList.add('active');
+        init();
+      };
+      img.src = heroes[hero].image;
+    }
+
+    function init() {
+      canvas.width = window.innerWidth;
+      canvas.height = Math.max(window.innerHeight * 1.5, 1500);
+      gridW = COLS * SIZE;
+      gridH = ROWS * SIZE;
+      gridX = canvas.width / 2 - gridW / 2;
+      gridY = canvas.height / 2 - gridH / 2;
+      
+      pieces = [];
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          pieces.push({
+            row: r, col: c,
+            x: Math.random() * (canvas.width - SIZE - 100) + 50,
+            y: Math.random() * (canvas.height - SIZE - 100) + 50,
+            locked: false,
+            fact: heroes[document.getElementById('hero').value].facts[r * COLS + c] || "Fun fact!"
+          });
+        }
+      }
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 2;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          ctx.strokeRect(gridX + c * SIZE, gridY + r * SIZE, SIZE, SIZE);
+        }
+      }
+      
+      // Draw pieces
+      pieces.forEach(p => {
+        ctx.save();
+        const sx = p.col * (img.width / COLS);
+        const sy = p.row * (img.height / ROWS);
+        const sw = img.width / COLS;
+        const sh = img.height / ROWS;
+        
+        ctx.drawImage(img, sx, sy, sw, sh, p.x, p.y, SIZE, SIZE);
+        
+        // Border color based on status
+        if (p.locked) {
+          ctx.strokeStyle = '#2ecc71'; // Green = correct
+          ctx.lineWidth = 6;
+        } else {
+          const correctX = gridX + p.col * SIZE;
+          const correctY = gridY + p.row * SIZE;
+          const close = Math.abs(p.x - correctX) < snapDist && Math.abs(p.y - correctY) < snapDist;
+          ctx.strokeStyle = close ? '#f39c12' : '#fff'; // Orange = close, white = wrong
+          ctx.lineWidth = close ? 5 : 3;
+        }
+        ctx.strokeRect(p.x, p.y, SIZE, SIZE);
+        
+        // Show fun fact on piece
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(p.x, p.y + SIZE - 30, SIZE, 30);
+        ctx.fillStyle = '#fff';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.fact, p.x + SIZE/2, p.y + SIZE - 10);
+        
+        ctx.restore();
+      });
+    }
+
+    canvas.onmousedown = e => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        const p = pieces[i];
+        if (!p.locked && x >= p.x && x <= p.x + SIZE && y >= p.y && y <= p.y + SIZE) {
+          dragging = p;
+          offsetX = x - p.x;
+          offsetY = y - p.y;
+          pieces.splice(i, 1);
+          pieces.push(p);
+          break;
+        }
+      }
+    };
+
+    canvas.onmousemove = e => {
+      if (!dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      dragging.x = e.clientX - rect.left - offsetX;
+      dragging.y = e.clientY - rect.top - offsetY;
+      draw();
+    };
+
+    canvas.onmouseup = () => {
+      if (dragging) {
+        const correctX = gridX + dragging.col * SIZE;
+        const correctY = gridY + dragging.row * SIZE;
+        if (Math.abs(dragging.x - correctX) < snapDist && Math.abs(dragging.y - correctY) < snapDist) {
+          dragging.x = correctX;
+          dragging.y = correctY;
+          dragging.locked = true;
+        }
+        dragging = null;
+        draw();
+        if (pieces.every(p => p.locked)) {
+          document.getElementById('win').style.display = 'block';
+        }
+      }
+    };
+
+    function reset() {
+      document.getElementById('game').classList.remove('active');
+      document.getElementById('setup').style.display = 'block';
+      document.getElementById('win').style.display = 'none';
+      pieces = [];
+    }
+  </script>
+</body>
+</html>
