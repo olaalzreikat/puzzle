@@ -393,7 +393,6 @@
       sourceImage = null;
       selectedPiece = null;
       successMessage.style.display = 'none';
-      debugInfo.style.display = 'none';
     });
 
     // Initialize game
@@ -708,7 +707,7 @@
       }
       
       const piece = getPieceAt(x, y);
-      if (piece) {
+      if (piece && !piece.isLocked) {
         selectedPiece = piece;
         const index = pieces.indexOf(piece);
         pieces.splice(index, 1);
@@ -760,7 +759,7 @@
       }
       
       const piece = getPieceAt(x, y);
-      canvas.style.cursor = piece ? 'grab' : 'default';
+      canvas.style.cursor = (piece && !piece.isLocked) ? 'grab' : 'default';
     });
 
     // Mouse up handler
