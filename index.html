@@ -2,60 +2,227 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Tech Heroes Puzzle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tech Pioneers Jigsaw Puzzle</title>
   <style>
-    body { font-family: Arial; background: #2c3e50; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-    #setup { background: white; padding: 30px; border-radius: 10px; max-width: 400px; }
-    #setup h1 { color: #2c3e50; margin-bottom: 20px; }
-    #setup select { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border: 2px solid #bdc3c7; border-radius: 5px; }
-    #setup button { width: 100%; padding: 15px; margin-top: 10px; background: #3498db; color: white; border: none; cursor: pointer; font-size: 18px; font-weight: bold; border-radius: 5px; }
-    #setup button:hover { background: #2980b9; }
-    #game { display: none; width: 100vw; min-height: 150vh; position: relative; }
-    #game.active { display: block; }
-    canvas { position: absolute; top: 0; left: 0; cursor: grab; }
-    canvas:active { cursor: grabbing; }
-    #win { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #2ecc71; color: white; padding: 40px; font-size: 32px; border-radius: 10px; display: none; z-index: 999; }
-    #reset { position: fixed; top: 20px; right: 20px; background: #e74c3c; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; border-radius: 5px; z-index: 999; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: auto;
+    }
+
+    #setupScreen {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 90%;
+    }
+
+    #setupScreen h1 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    #setupScreen label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #34495e;
+    }
+
+    #setupScreen select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #bdc3c7;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #setupScreen button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #setupScreen button:hover {
+      background: #2980b9;
+    }
+
+    #gameContainer {
+      position: relative;
+      width: 100vw;
+      min-height: 150vh;
+      display: none;
+    }
+
+    #gameContainer.active {
+      display: block;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      cursor: grab;
+    }
+
+    #canvas:active {
+      cursor: grabbing;
+    }
+
+    #successMessage {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(46, 204, 113, 0.95);
+      color: white;
+      padding: 30px 60px;
+      border-radius: 10px;
+      font-size: 32px;
+      font-weight: bold;
+      display: none;
+      z-index: 2000;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    #instructions {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      max-width: 300px;
+      z-index: 1000;
+    }
+
+    #instructions h3 {
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    #instructions ul {
+      margin-left: 20px;
+    }
+
+    #instructions li {
+      margin: 5px 0;
+      color: #34495e;
+    }
+
+    #resetButton {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(231, 76, 60, 0.9);
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    #resetButton:hover {
+      background: rgba(192, 57, 43, 0.9);
+    }
+
+    #debugInfo {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      z-index: 1000;
+      display: none;
+    }
   </style>
 </head>
+
 <body>
-  <div id="setup">
-    <h1>🧩 Tech Heroes Puzzle</h1>
-    <select id="hero">
-      <option value="">-- Choose a Hero --</option>
+  <div id="setupScreen">
+    <h1>🧩 Tech Pioneers Puzzle</h1>
+
+    <label for="personSelect">Choose a Tech Pioneer:</label>
+    <select id="personSelect">
+      <option value="">-- Select a Pioneer --</option>
       <option value="Ada Lovelace">Ada Lovelace - First Programmer</option>
       <option value="Alan Turing">Alan Turing - Code Breaker</option>
       <option value="Grace Hopper">Grace Hopper - Bug Hunter</option>
       <option value="Tim Berners-Lee">Tim Berners-Lee - Web Inventor</option>
       <option value="Steve Jobs">Steve Jobs - Apple Founder</option>
-      <option value="Bill Gates">Bill Gates - Microsoft</option>
-      <option value="Mark Zuckerberg">Mark Zuckerberg - Facebook</option>
-      <option value="Jeff Bezos">Jeff Bezos - Amazon</option>
-      <option value="Charles Babbage">Charles Babbage - Computer Dad</option>
+      <option value="Bill Gates">Bill Gates - Microsoft Creator</option>
+      <option value="Mark Zuckerberg">Mark Zuckerberg - Facebook Founder</option>
+      <option value="Jeff Bezos">Jeff Bezos - Amazon Founder</option>
+      <option value="Charles Babbage">Charles Babbage - Computer Father</option>
       <option value="John von Neumann">John von Neumann - Math Genius</option>
-      <option value="Kathleen Booth">Kathleen Booth - Programmer</option>
+      <option value="Kathleen Booth">Kathleen Booth - Assembly Pioneer</option>
     </select>
-    <select id="rows">
+
+    <label for="gridRows">Grid Rows:</label>
+    <select id="gridRows">
       <option value="2">2 Rows (Easy)</option>
       <option value="3" selected>3 Rows (Medium)</option>
       <option value="4">4 Rows (Hard)</option>
     </select>
-    <select id="cols">
+
+    <label for="gridCols">Grid Columns:</label>
+    <select id="gridCols">
       <option value="2">2 Columns (Easy)</option>
       <option value="3" selected>3 Columns (Medium)</option>
       <option value="4">4 Columns (Hard)</option>
     </select>
-    <button onclick="start()">Start Puzzle</button>
+
+    <button id="startButton">Start Puzzle</button>
   </div>
 
-  <div id="game">
+  <div id="gameContainer">
     <canvas id="canvas"></canvas>
-    <div id="win">🎉 Puzzle Complete! 🎉</div>
-    <button id="reset" onclick="reset()">New Puzzle</button>
+    <div id="successMessage">Puzzle Complete! 🎉</div>
+    <button id="resetButton">New Puzzle</button>
+    <div id="instructions">
+      <h3>Instructions:</h3>
+      <ul>
+        <li>Drag pieces to move them</li>
+        <li>Click blue circles to rotate</li>
+        <li>Pieces snap when close to correct position</li>
+        <li>Match all pieces to win!</li>
+      </ul>
+    </div>
+    <div id="debugInfo"></div>
   </div>
 
   <script>
-    const heroes = {
+    // Tech Pioneers Data
+    const TECH_PIONEERS = {
       "Ada Lovelace": {
         image: "https://lh3.googleusercontent.com/d/1bq7VjRxHJyh7td9PkNTZVAyK6HaXGmGB",
         facts: [
@@ -157,147 +324,517 @@
       }
     };
 
+    // Setup screen elements
+    const setupScreen = document.getElementById('setupScreen');
+    const personSelect = document.getElementById('personSelect');
+    const gridRowsSelect = document.getElementById('gridRows');
+    const gridColsSelect = document.getElementById('gridCols');
+    const startButton = document.getElementById('startButton');
+    const resetButton = document.getElementById('resetButton');
+    
+    // Game elements
+    const gameContainer = document.getElementById('gameContainer');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let img, pieces = [], dragging = null, offsetX = 0, offsetY = 0;
-    let ROWS, COLS, SIZE = 200, snapDist = 40;
-    let gridX, gridY, gridW, gridH;
+    const successMessage = document.getElementById('successMessage');
+    const debugInfo = document.getElementById('debugInfo');
+    
+    // Game state
+    let sourceImage = null;
+    let pieces = [];
+    let selectedPiece = null;
+    let isDragging = false;
+    let isRotating = false;
+    let dragOffset = {
+      x: 0,
+      y: 0
+    };
+    let rotateStartAngle = 0;
+    
+    // Configuration
+    let PIECE_SIZE = 200;
+    let SNAP_DISTANCE = 40;
+    let ROTATION_INCREMENT = 15;
+    let ROTATION_SNAP_ANGLE = 15;
+    let GRID_ROWS = 3;
+    let GRID_COLS = 3;
+    let SHOW_TARGET_GRID = true;
+    let PUZZLE_WIDTH, PUZZLE_HEIGHT, PUZZLE_START_X, PUZZLE_START_Y;
+    let currentPioneerFacts = [];
 
-    function start() {
-      const hero = document.getElementById('hero').value;
-      if (!hero) { alert('Choose a hero!'); return; }
-      ROWS = parseInt(document.getElementById('rows').value);
-      COLS = parseInt(document.getElementById('cols').value);
+    // Start puzzle
+    startButton.addEventListener('click', () => {
+      const selectedPerson = personSelect.value;
+      if (!selectedPerson) {
+        alert('Please choose a tech pioneer!');
+        return;
+      }
       
-      img = new Image();
+      GRID_ROWS = parseInt(gridRowsSelect.value);
+      GRID_COLS = parseInt(gridColsSelect.value);
+      currentPioneerFacts = TECH_PIONEERS[selectedPerson].facts;
+      
+      const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('game').classList.add('active');
-        init();
+        sourceImage = img;
+        setupScreen.style.display = 'none';
+        gameContainer.classList.add('active');
+        initializeGame();
       };
-      img.src = heroes[hero].image;
-    }
+      img.src = TECH_PIONEERS[selectedPerson].image;
+    });
 
-    function init() {
+    // Reset button
+    resetButton.addEventListener('click', () => {
+      gameContainer.classList.remove('active');
+      setupScreen.style.display = 'block';
+      pieces = [];
+      sourceImage = null;
+      selectedPiece = null;
+      successMessage.style.display = 'none';
+      debugInfo.style.display = 'none';
+    });
+
+    // Initialize game
+    function initializeGame() {
       canvas.width = window.innerWidth;
       canvas.height = Math.max(window.innerHeight * 1.5, 1500);
-      gridW = COLS * SIZE;
-      gridH = ROWS * SIZE;
-      gridX = canvas.width / 2 - gridW / 2;
-      gridY = canvas.height / 2 - gridH / 2;
       
-      pieces = [];
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          pieces.push({
-            row: r, col: c,
-            x: Math.random() * (canvas.width - SIZE - 100) + 50,
-            y: Math.random() * (canvas.height - SIZE - 100) + 50,
-            locked: false,
-            fact: heroes[document.getElementById('hero').value].facts[r * COLS + c] || "Fun fact!"
-          });
-        }
-      }
+      PUZZLE_WIDTH = GRID_COLS * PIECE_SIZE;
+      PUZZLE_HEIGHT = GRID_ROWS * PIECE_SIZE;
+      PUZZLE_START_X = (window.innerWidth / 2) - (PUZZLE_WIDTH / 2);
+      PUZZLE_START_Y = (window.innerHeight / 2) - (PUZZLE_HEIGHT / 2);
+      
+      createPuzzlePieces();
       draw();
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Draw grid
-      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-      ctx.lineWidth = 2;
-      for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-          ctx.strokeRect(gridX + c * SIZE, gridY + r * SIZE, SIZE, SIZE);
-        }
-      }
-      
-      // Draw pieces
-      pieces.forEach(p => {
-        ctx.save();
-        const sx = p.col * (img.width / COLS);
-        const sy = p.row * (img.height / ROWS);
-        const sw = img.width / COLS;
-        const sh = img.height / ROWS;
-        
-        ctx.drawImage(img, sx, sy, sw, sh, p.x, p.y, SIZE, SIZE);
-        
-        // Border color based on status
-        if (p.locked) {
-          ctx.strokeStyle = '#2ecc71'; // Green = correct
-          ctx.lineWidth = 6;
-        } else {
-          const correctX = gridX + p.col * SIZE;
-          const correctY = gridY + p.row * SIZE;
-          const close = Math.abs(p.x - correctX) < snapDist && Math.abs(p.y - correctY) < snapDist;
-          ctx.strokeStyle = close ? '#f39c12' : '#fff'; // Orange = close, white = wrong
-          ctx.lineWidth = close ? 5 : 3;
-        }
-        ctx.strokeRect(p.x, p.y, SIZE, SIZE);
-        
-        // Show fun fact on piece
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(p.x, p.y + SIZE - 30, SIZE, 30);
-        ctx.fillStyle = '#fff';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(p.fact, p.x + SIZE/2, p.y + SIZE - 10);
-        
-        ctx.restore();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
       });
     }
 
-    canvas.onmousedown = e => {
+    // Create puzzle pieces
+    function createPuzzlePieces() {
+      pieces = [];
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          const piece = new PuzzlePiece(row * GRID_COLS + col + 1, row, col);
+          pieces.push(piece);
+        }
+      }
+    }
+
+    // Piece class
+    class PuzzlePiece {
+      constructor(id, row, col) {
+        this.id = id;
+        this.correctRow = row;
+        this.correctCol = col;
+        
+        const margin = 50;
+        const spawnRegions = [
+          {
+            x: margin,
+            y: margin,
+            width: Math.max(PUZZLE_START_X - margin - 50, 100),
+            height: canvas.height - margin * 2
+          },
+          {
+            x: PUZZLE_START_X + PUZZLE_WIDTH + 50,
+            y: margin,
+            width: Math.max(canvas.width - PUZZLE_START_X - PUZZLE_WIDTH - margin - 50, 100),
+            height: canvas.height - margin * 2
+          },
+          {
+            x: margin,
+            y: PUZZLE_START_Y + PUZZLE_HEIGHT + 50,
+            width: canvas.width - margin * 2,
+            height: Math.max(canvas.height - PUZZLE_START_Y - PUZZLE_HEIGHT - margin - 50, 100)
+          }
+        ];
+        
+        const region = spawnRegions[id % spawnRegions.length];
+        this.currentX = region.x + Math.random() * Math.max(region.width - PIECE_SIZE, PIECE_SIZE);
+        this.currentY = region.y + Math.random() * Math.max(region.height - PIECE_SIZE, PIECE_SIZE);
+        this.currentX = Math.max(margin, Math.min(this.currentX, canvas.width - PIECE_SIZE - margin));
+        this.currentY = Math.max(margin, Math.min(this.currentY, canvas.height - PIECE_SIZE - margin));
+        
+        this.rotation = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+        this.isLocked = false;
+      }
+      
+      get correctX() {
+        return PUZZLE_START_X + (this.correctCol * PIECE_SIZE);
+      }
+      
+      get correctY() {
+        return PUZZLE_START_Y + (this.correctRow * PIECE_SIZE);
+      }
+      
+      isInCorrectPosition() {
+        const dx = Math.abs(this.currentX - this.correctX);
+        const dy = Math.abs(this.currentY - this.correctY);
+        const correctRotation = this.rotation % 360 === 0;
+        const inPosition = dx < SNAP_DISTANCE && dy < SNAP_DISTANCE && correctRotation;
+        
+        if (selectedPiece === this) {
+          updateDebugInfo(this, dx, dy, correctRotation);
+        }
+        
+        return inPosition;
+      }
+      
+      snapToPosition() {
+        this.currentX = this.correctX;
+        this.currentY = this.correctY;
+        this.rotation = 0;
+        this.isLocked = true;
+      }
+      
+      contains(x, y) {
+        const centerX = this.currentX + PIECE_SIZE / 2;
+        const centerY = this.currentY + PIECE_SIZE / 2;
+        const angle = -this.rotation * Math.PI / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const rotatedX = dx * cos - dy * sin + centerX;
+        const rotatedY = dx * sin + dy * cos + centerY;
+        
+        return rotatedX >= this.currentX &&
+               rotatedX <= this.currentX + PIECE_SIZE &&
+               rotatedY >= this.currentY &&
+               rotatedY <= this.currentY + PIECE_SIZE;
+      }
+      
+      getRotateHandles() {
+        const centerX = this.currentX + PIECE_SIZE / 2;
+        const centerY = this.currentY + PIECE_SIZE / 2;
+        const angle = this.rotation * Math.PI / 180;
+        const handleDistance = PIECE_SIZE / 2 + 15;
+        
+        return [
+          {
+            x: centerX + handleDistance * Math.cos(angle),
+            y: centerY + handleDistance * Math.sin(angle),
+            side: 'right'
+          },
+          {
+            x: centerX - handleDistance * Math.cos(angle),
+            y: centerY - handleDistance * Math.sin(angle),
+            side: 'left'
+          }
+        ];
+      }
+      
+      draw() {
+        if (!sourceImage) return;
+        
+        ctx.save();
+        const centerX = this.currentX + PIECE_SIZE / 2;
+        const centerY = this.currentY + PIECE_SIZE / 2;
+        ctx.translate(centerX, centerY);
+        ctx.rotate(this.rotation * Math.PI / 180);
+        
+        const sourceWidth = sourceImage.width;
+        const sourceHeight = sourceImage.height;
+        const pieceSourceWidth = sourceWidth / GRID_COLS;
+        const pieceSourceHeight = sourceHeight / GRID_ROWS;
+        const sx = this.correctCol * pieceSourceWidth;
+        const sy = this.correctRow * pieceSourceHeight;
+        
+        ctx.drawImage(
+          sourceImage,
+          sx, sy, pieceSourceWidth, pieceSourceHeight,
+          -PIECE_SIZE / 2, -PIECE_SIZE / 2, PIECE_SIZE, PIECE_SIZE
+        );
+        
+        // Border with improved feedback
+        const dx = Math.abs(this.currentX - this.correctX);
+        const dy = Math.abs(this.currentY - this.correctY);
+        const closePosition = dx < SNAP_DISTANCE && dy < SNAP_DISTANCE;
+        const correctRotation = this.rotation % 360 === 0;
+        
+        if (this.isLocked) {
+          ctx.strokeStyle = 'rgba(46, 204, 113, 0.9)';
+          ctx.lineWidth = 5;
+        } else if (closePosition && correctRotation) {
+          ctx.strokeStyle = 'rgba(46, 204, 113, 0.9)';
+          ctx.lineWidth = 5;
+        } else if (closePosition) {
+          ctx.strokeStyle = 'rgba(243, 156, 18, 0.9)';
+          ctx.lineWidth = 4;
+        } else {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 3;
+        }
+        ctx.strokeRect(-PIECE_SIZE / 2, -PIECE_SIZE / 2, PIECE_SIZE, PIECE_SIZE);
+        
+        ctx.restore();
+        
+        if (selectedPiece === this && !this.isLocked) {
+          const handles = this.getRotateHandles();
+          handles.forEach(handle => {
+            ctx.beginPath();
+            ctx.arc(handle.x, handle.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.8)';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          });
+        }
+      }
+    }
+
+    // Draw target grid with facts
+    function drawTargetGrid() {
+      if (!SHOW_TARGET_GRID) return;
+      
+      ctx.save();
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          const x = PUZZLE_START_X + (col * PIECE_SIZE);
+          const y = PUZZLE_START_Y + (row * PIECE_SIZE);
+          
+          const piece = pieces.find(p => p.correctRow === row && p.correctCol === col);
+          
+          if (!piece || !piece.isLocked) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.strokeRect(x, y, PIECE_SIZE, PIECE_SIZE);
+            ctx.setLineDash([]);
+            
+            const fact = currentPioneerFacts[row * GRID_COLS + col] || "Fun fact!";
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fillRect(x, y, PIECE_SIZE, PIECE_SIZE);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const words = fact.split(' ');
+            let line = '';
+            let lines = [];
+            words.forEach(word => {
+              const testLine = line + word + ' ';
+              if (ctx.measureText(testLine).width > PIECE_SIZE - 20) {
+                lines.push(line);
+                line = word + ' ';
+              } else {
+                line = testLine;
+              }
+            });
+            lines.push(line);
+            
+            const lineHeight = 20;
+            const startY = y + PIECE_SIZE/2 - (lines.length * lineHeight / 2);
+            lines.forEach((line, i) => {
+              ctx.fillText(line.trim(), x + PIECE_SIZE/2, startY + i * lineHeight);
+            });
+          } else {
+            ctx.strokeStyle = 'rgba(46, 204, 113, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x, y, PIECE_SIZE, PIECE_SIZE);
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    // Update debug info
+    function updateDebugInfo(piece, dx, dy, correctRotation) {
+      debugInfo.style.display = 'block';
+      debugInfo.innerHTML = `
+        <div>Piece ${piece.id}: Row ${piece.correctRow}, Col ${piece.correctCol}</div>
+        <div>Distance: dx=${Math.round(dx)}, dy=${Math.round(dy)}</div>
+        <div>Rotation: ${Math.round(piece.rotation)}° (correct: ${correctRotation})</div>
+        <div>Ready to lock: ${piece.isInCorrectPosition() ? 'YES' : 'NO'}</div>
+      `;
+    }
+
+    // Draw all pieces
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawTargetGrid();
+      pieces.filter(piece => piece.isLocked).forEach(piece => piece.draw());
+      pieces.filter(piece => !piece.isLocked).forEach(piece => piece.draw());
+    }
+
+    // Get piece at position
+    function getPieceAt(x, y) {
+      for (let i = pieces.length - 1; i >= 0; i--) {
+        if (!pieces[i].isLocked && pieces[i].contains(x, y)) {
+          return pieces[i];
+        }
+      }
+      return null;
+    }
+
+    // Check if clicking on rotation handle
+    function getRotateHandle(x, y, piece) {
+      if (!piece || piece.isLocked) return null;
+      const handles = piece.getRotateHandles();
+      for (let handle of handles) {
+        const dx = x - handle.x;
+        const dy = y - handle.y;
+        if (Math.sqrt(dx * dx + dy * dy) < 15) {
+          return handle;
+        }
+      }
+      return null;
+    }
+
+    // Mouse down handler
+    canvas.addEventListener('mousedown', (e) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      for (let i = pieces.length - 1; i >= 0; i--) {
-        const p = pieces[i];
-        if (!p.locked && x >= p.x && x <= p.x + SIZE && y >= p.y && y <= p.y + SIZE) {
-          dragging = p;
-          offsetX = x - p.x;
-          offsetY = y - p.y;
-          pieces.splice(i, 1);
-          pieces.push(p);
-          break;
+      if (selectedPiece && !selectedPiece.isLocked) {
+        const handle = getRotateHandle(x, y, selectedPiece);
+        if (handle) {
+          isRotating = true;
+          const centerX = selectedPiece.currentX + PIECE_SIZE / 2;
+          const centerY = selectedPiece.currentY + PIECE_SIZE / 2;
+          rotateStartAngle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI;
+          return;
         }
       }
-    };
-
-    canvas.onmousemove = e => {
-      if (!dragging) return;
-      const rect = canvas.getBoundingClientRect();
-      dragging.x = e.clientX - rect.left - offsetX;
-      dragging.y = e.clientY - rect.top - offsetY;
-      draw();
-    };
-
-    canvas.onmouseup = () => {
-      if (dragging) {
-        const correctX = gridX + dragging.col * SIZE;
-        const correctY = gridY + dragging.row * SIZE;
-        if (Math.abs(dragging.x - correctX) < snapDist && Math.abs(dragging.y - correctY) < snapDist) {
-          dragging.x = correctX;
-          dragging.y = correctY;
-          dragging.locked = true;
-        }
-        dragging = null;
+      
+      const piece = getPieceAt(x, y);
+      if (piece) {
+        selectedPiece = piece;
+        const index = pieces.indexOf(piece);
+        pieces.splice(index, 1);
+        pieces.push(piece);
+        isDragging = true;
+        dragOffset.x = x - piece.currentX;
+        dragOffset.y = y - piece.currentY;
         draw();
-        if (pieces.every(p => p.locked)) {
-          document.getElementById('win').style.display = 'block';
+      } else {
+        selectedPiece = null;
+        debugInfo.style.display = 'none';
+        draw();
+      }
+    });
+
+    // Mouse move handler
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      if (isDragging && selectedPiece) {
+        selectedPiece.currentX = x - dragOffset.x;
+        selectedPiece.currentY = y - dragOffset.y;
+        canvas.style.cursor = 'grabbing';
+        draw();
+        return;
+      }
+      
+      if (isRotating && selectedPiece) {
+        const centerX = selectedPiece.currentX + PIECE_SIZE / 2;
+        const centerY = selectedPiece.currentY + PIECE_SIZE / 2;
+        const currentAngle = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI;
+        const deltaAngle = currentAngle - rotateStartAngle;
+        const newRotation = selectedPiece.rotation + deltaAngle;
+        selectedPiece.rotation = Math.round(newRotation / ROTATION_INCREMENT) * ROTATION_INCREMENT;
+        rotateStartAngle = currentAngle;
+        canvas.style.cursor = 'crosshair';
+        draw();
+        return;
+      }
+      
+      if (selectedPiece && !selectedPiece.isLocked) {
+        const handle = getRotateHandle(x, y, selectedPiece);
+        if (handle) {
+          canvas.style.cursor = 'pointer';
+          return;
         }
       }
-    };
+      
+      const piece = getPieceAt(x, y);
+      canvas.style.cursor = piece ? 'grab' : 'default';
+    });
 
-    function reset() {
-      document.getElementById('game').classList.remove('active');
-      document.getElementById('setup').style.display = 'block';
-      document.getElementById('win').style.display = 'none';
-      pieces = [];
+    // Mouse up handler
+    canvas.addEventListener('mouseup', (e) => {
+      if (selectedPiece && !selectedPiece.isLocked && (isDragging || isRotating)) {
+        const normalizedRotation = ((selectedPiece.rotation % 360) + 360) % 360;
+        const snapAngles = [0, 90, 180, 270, 360];
+        let closestAngle = snapAngles[0];
+        let minDiff = Math.abs(normalizedRotation - snapAngles[0]);
+        
+        for (let angle of snapAngles) {
+          const diff = Math.abs(normalizedRotation - angle);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestAngle = angle;
+          }
+        }
+        
+        if (minDiff < ROTATION_SNAP_ANGLE) {
+          selectedPiece.rotation = closestAngle % 360;
+        }
+        
+        if (selectedPiece.isInCorrectPosition()) {
+          selectedPiece.snapToPosition();
+          selectedPiece = null;
+          debugInfo.innerHTML = '<div style="color: green;">Piece locked </div>';
+          checkWinCondition();
+        }
+      }
+      
+      isDragging = false;
+      isRotating = false;
+      draw();
+    });
+
+    // Also handle mouseup on document
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging || isRotating) {
+        isDragging = false;
+        isRotating = false;
+        draw();
+      }
+    });
+
+    // Stop dragging if mouse leaves canvas
+    canvas.addEventListener('mouseleave', () => {
+      if (isDragging || isRotating ) {
+        isDragging = false;
+        isRotating = false;
+        draw();
+      }
+    });
+
+    // Check if puzzle is complete
+    function checkWinCondition() {
+      const allLocked = pieces.every(piece => piece.isLocked);
+      if (allLocked) {
+        setTimeout(() => {
+          successMessage.style.display = 'block';
+          debugInfo.innerHTML = '<div style="color: green; font-size: 16px;">🎉 PUZZLE COMPLETE! 🎉</div>';
+        }, 300);
+      }
     }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (gameContainer.classList.contains('active')) {
+        canvas.width = window.innerWidth;
+        canvas.height = Math.max(window.innerHeight * 1.5, 1500);
+        PUZZLE_START_X = (window.innerWidth / 2) - (PUZZLE_WIDTH / 2);
+        PUZZLE_START_Y = (window.innerHeight / 2) - (PUZZLE_HEIGHT / 2);
+        draw();
+      }
+    });
   </script>
 </body>
 </html>
